@@ -12,10 +12,11 @@ int main(int argc, char* argv[])
 
 	Scanner scanner(inFileName);
 	scanner.Tokenize();
-	cout << scanner.ToString();
+
+	// cout << scanner.ToString();
 
 	Parser parser(scanner.getVector());
-	cout << parser.VecToString();
+	// cout << parser.VecToString();
 
 	parser.Parse();
 	cout << parser.ToString();

@@ -24,6 +24,42 @@ public:
 	
 	void Match(TokenType typeOfToken);
 
+	void DatalogProgram(void);
+
+	void SchemeList(void);
+
+	void FactList(void);
+
+	void RuleList(void);
+
+	void QueryList(void);
+
+	void Scheme(void);
+
+	void Fact(void);
+
+	void Rule(void);
+	
+	void Query(void);
+
+	void HeadPredicate(void);
+
+	void Predicate(void);
+
+	void PredicateList(void);
+
+	void ParameterList(void);
+
+	void StringList(void);
+
+	void IdList(void);
+
+	void Parameter(void);
+
+	void Expression(void);
+
+	void Operator(void);
+
 	string VecToString(void);
 
 	string ToString(void);
