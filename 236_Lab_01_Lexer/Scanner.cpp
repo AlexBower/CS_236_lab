@@ -1,8 +1,9 @@
 #include "Scanner.h"
 
-Scanner::Scanner(string inFileString) : inFileName(inFileString), currentLineNumber(1)
+Scanner::Scanner(string inFileString) :
+	inFileName(inFileString), currentLineNumber(1)
 {
-	tokenList = list<Token>();
+	tokenVector = vector<Token>();
 }
 
 Scanner::~Scanner()
@@ -18,7 +19,7 @@ void Scanner::Tokenize(void)
 		cerr << "Unable to open " << inFileName << " for input";
 	}
 
-	tokenList.clear();
+	tokenVector.clear();
 
 	Token tempToken;
 	while (inFile.peek() != EOF)
@@ -95,12 +96,12 @@ void Scanner::Tokenize(void)
 				inFile.get();
 				break;
 			}
-			tokenList.push_back(tempToken);
+			tokenVector.push_back(tempToken);
 		}
 	}
 
 	tempToken = Token("", currentLineNumber, EOF_TOKEN);
-	tokenList.push_back(tempToken);
+	tokenVector.push_back(tempToken);
 
 	inFile.close();
 	return;
@@ -139,7 +140,7 @@ void Scanner::IDStateMachine(void)
 		// Does not match a keyword so we know it's an ID
 		tempToken = Token(charBuffer, currentLineNumber, ID);
 	}
-	tokenList.push_back(tempToken);
+	tokenVector.push_back(tempToken);
 }
 
 Token Scanner::StringStateMachine(void)
@@ -229,16 +230,16 @@ Token Scanner::MultiLineCommentStateMachine(string initialCharBuffer)
 	return Token(charBuffer, initialLineNumber, UNDEFINED);
 }
 
-string Scanner::toString(void)
+string Scanner::ToString(void)
 {
 	ostringstream outString;
 
-	for (list<Token>::iterator iter = tokenList.begin(); iter != tokenList.end(); iter++)
+	for (int i = 0; i < tokenVector.size(); i++)
 	{
-		outString << iter->toString();
+		outString << tokenVector.at(i).ToString();
 	}
 
-	outString << "Total Tokens = " << tokenList.size();
+	outString << "Total Tokens = " << tokenVector.size();
 
 	return outString.str();
 }

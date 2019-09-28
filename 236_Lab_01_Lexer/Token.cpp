@@ -27,7 +27,7 @@ string tokenTypeToString(TokenType tokenType)
 	return "ERROR"; // a string MUST be returned by the end
 }
 
-string Token::toString(void) const
+string Token::ToString(void) const
 {
 	ostringstream outString;
 
