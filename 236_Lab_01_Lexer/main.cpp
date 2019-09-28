@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include "Scanner.h"
+#include "Parser.h"
 
 using namespace std;
 
@@ -11,7 +12,15 @@ int main(int argc, char* argv[])
 
 	Scanner scanner(inFileName);
 	scanner.Tokenize();
-	cout << scanner.toString();
+	cout << scanner.ToString();
+
+	Parser parser(scanner.getVector());
+	cout << parser.VecToString();
+
+	parser.Parse();
+	cout << parser.ToString();
+
+	system("pause");
 
 	return 0;
 }

@@ -28,11 +28,17 @@ public:
 	{
 	}
 
-	~Token()
+	~Token() 
 	{
 	}
 
-	string toString(void) const;
+	string getValue() { return actualValue; }
+
+	int getLineNum() { return lineNumber; }
+
+	TokenType getTokenType() { return tokenType; }
+
+	string ToString(void) const;
 };
 
 #endif //TOKEN

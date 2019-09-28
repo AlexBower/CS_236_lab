@@ -6,7 +6,7 @@
 #include <string>
 #include <cctype>
 #include <sstream>
-#include <list>
+#include <vector>
 #include "Token.h"
 
 using namespace std;
@@ -16,7 +16,7 @@ class Scanner
 private:
 	string inFileName;
 	int currentLineNumber;
-	list<Token> tokenList;
+	vector<Token> tokenVector;
 	ifstream inFile;
 
 public:
@@ -34,7 +34,9 @@ public:
 
 	Token MultiLineCommentStateMachine(string initialCharBuffer);
 
-	string toString(void);
+	string ToString(void);
+
+	vector<Token> getVector() { return tokenVector; }
 };
 
 #endif //SCANNER
