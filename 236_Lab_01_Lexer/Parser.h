@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <set>
 
 using namespace std;
 
@@ -15,6 +16,12 @@ private:
 	vector<Token> tokenVector;
 	int currentTokenIndex;
 	ostringstream outString;
+	int schemesCount;
+	int factsCount;
+	int rulesCount;
+	int queriesCount;
+	set<string> domainSet;
+	const string INDENT_SPACE = "  ";
 public:
 	Parser(vector<Token> vectorOfTokens = vector<Token>());
 
@@ -50,7 +57,7 @@ public:
 
 	void ParameterList(void);
 
-	void StringList(void);
+	void StringList(bool isFromFacts = false);
 
 	void IdList(void);
 

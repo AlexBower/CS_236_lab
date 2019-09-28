@@ -1,23 +1,22 @@
+# For use ONLY during the Fall 2019 semester
+# Copyright Cory Barker, Brigham Young University, August 2019
+
+
 Schemes:
-    f(A,B)
-    g(C,D)
-    r(E,F)
-
-Facts:
-    f('1','2').
-    f('4','3').
-    g('3','2').
-    r('1','4').
-    r('2','5').
-    r('3','5').
-    r('4','1').
- 
+    add(X, Y, Z)
+    nums(A, B)
+    
+Facts: #comment
+    add('1', '2', '3').
+    add('2','4','5').
+    nums('2', '3').
+    nums('6', '7').
+    nums('2', '6').
 Rules:
-    r(A,B) :- f(A,X),g(B,X).
-    f(C,D) :- r(D,C).
-    g(E,F) :- f(E,X),r(X,F).
-
+    add(X,Y,Z) :- nums(X,Y), add(X,Y,((X+Y)Z)).
+    
 Queries:
-    f('3',Z)?
-    r(Y,'3')?
-    f(W,X)?
+    add('2','3','5')?
+    add(X,Y,'13')?
+    nums(X,('3'*('4'+(X * '-1'))))?
+ 
