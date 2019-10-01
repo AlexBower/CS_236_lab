@@ -2,11 +2,14 @@
 #define PARSER_H
 
 #include "Token.h"
+#include "DatalogProgram.h"
+#include "Predicate.h"
+#include "Parameter.h"
+#include "Rule.h"
 #include <iostream>
 #include <string>
 #include <vector>
 #include <sstream>
-#include <set>
 
 using namespace std;
 
@@ -14,58 +17,54 @@ class Parser
 {
 private:
 	vector<Token> tokenVector;
+	vector<Parameter> tempParameterVector;
+	vector<Predicate> tempPredicateVector;
 	int currentTokenIndex;
-	ostringstream outString;
-	int schemesCount;
-	int factsCount;
-	int rulesCount;
-	int queriesCount;
-	set<string> domainSet;
-	const string INDENT_SPACE = "  ";
+	DatalogProgram datalogProgram;
 public:
 	Parser(vector<Token> vectorOfTokens = vector<Token>());
 
 	~Parser(void);
 	
-	void Parse(void);
+	DatalogProgram Parse(void);
 	
-	void Match(TokenType typeOfToken);
+	string Match(TokenType typeOfToken);
 
-	void DatalogProgram(void);
+	void ParseDatalog(void);
 
-	void SchemeList(void);
+	void ParseSchemeList(void);
 
-	void FactList(void);
+	void ParseFactList(void);
 
-	void RuleList(void);
+	void ParseRuleList(void);
 
-	void QueryList(void);
+	void ParseQueryList(void);
 
-	void Scheme(void);
+	void ParseScheme(void);
 
-	void Fact(void);
+	void ParseFact(void);
 
-	void Rule(void);
+	void ParseRule(void);
 	
-	void Query(void);
+	void ParseQuery(void);
 
-	void HeadPredicate(void);
+	Predicate ParseHeadPredicate(void);
 
-	void Predicate(void);
+	void ParsePredicate(void);
 
-	void PredicateList(void);
+	void ParsePredicateList(void);
 
-	void ParameterList(void);
+	void ParseParameterList(void);
 
-	void StringList(bool isFromFacts = false);
+	void ParseStringList(void);
 
-	void IdList(void);
+	void ParseIdList(void);
 
-	void Parameter(void);
+	string ParseParameter(void);
 
-	void Expression(void);
+	string ParseExpression(void);
 
-	void Operator(void);
+	string ParseOperator(void);
 
 	string VecToString(void);
 

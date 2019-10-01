@@ -1,2 +1,5 @@
-﻿  main.cpp
+﻿  Parser.cpp
+c:\users\alex\source\repos\236_lab_01_lexer\236_lab_01_lexer\parser.cpp(346): warning C4018: '<': signed/unsigned mismatch
+  main.cpp
+  Generating Code...
   236_Lab_01_Lexer.vcxproj -> C:\Users\alex\source\repos\236_Lab_01_Lexer\Debug\236_Lab_01_Lexer.exe
