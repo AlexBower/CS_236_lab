@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Scanner.h"
 #include "Parser.h"
+#include "DatalogProgram.h"
 
 using namespace std;
 
@@ -18,8 +19,10 @@ int main(int argc, char* argv[])
 	Parser parser(scanner.getVector());
 	// cout << parser.VecToString();
 
-	parser.Parse();
-	cout << parser.ToString();
+	DatalogProgram datalogProgram;
+
+	datalogProgram = parser.Parse();
+	cout << datalogProgram.ToString();
 
 	system("pause");
 

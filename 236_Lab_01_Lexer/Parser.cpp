@@ -2,10 +2,8 @@
 
 
 Parser::Parser(vector<Token> vectorOfTokens) :
-	tokenVector(vectorOfTokens), currentTokenIndex(0), outString(""),
-	schemesCount(0), factsCount(0), rulesCount(0), queriesCount(0)
+	tokenVector(vectorOfTokens), currentTokenIndex(0)
 {
-	domainSet = set<string>();
 }
 
 
@@ -13,45 +11,31 @@ Parser::~Parser()
 {
 }
 
-void Parser::Parse()
+DatalogProgram Parser::Parse()
 {
 	try
 	{
+		datalogProgram = DatalogProgram();
+
 		currentTokenIndex = 0;
-		schemesCount = 0;
-		factsCount = 0;
-		rulesCount = 0;
-		queriesCount = 0;
-		domainSet.clear();
-		outString = ostringstream("");
-		// Go through once to count number of each lists.
-		DatalogProgram();
+
+		ParseDatalog();
 
 		Match(EOF_TOKEN);
 
-		// Go through again to print out.
-		currentTokenIndex = 0;
-		outString = ostringstream("");
-		domainSet.clear();
-		outString << "Success!" << endl;
-		DatalogProgram();
+		cout << "Success!" << endl;
 
-		outString << "Domain(" << domainSet.size() << "):" << endl;
-		for (set<string>::iterator itr = domainSet.begin();
-			itr != domainSet.end(); ++itr)
-		{
-			outString << INDENT_SPACE << *itr << endl;
-		}
+		return datalogProgram;
 	}
 	catch (Token error)
 	{
-		outString = ostringstream("");
-		outString << "Failure!" << endl;
-		outString << "  " << error.ToString();
+		cout << "Failure!" << endl;
+		cout << "  " << error.ToString();
+		return DatalogProgram();
 	}
 }
 
-void Parser::Match(TokenType typeOfToken)
+string Parser::Match(TokenType typeOfToken)
 {
 	while (tokenVector.at(currentTokenIndex).getTokenType() == COMMENT)
 	{
@@ -60,14 +44,14 @@ void Parser::Match(TokenType typeOfToken)
 	if (typeOfToken == COMMENT)
 	{
 		// We use this to 'clean' out COMMENTS before if statements
-		return;
+		return "";
 	}
 	
 	if (tokenVector.at(currentTokenIndex).getTokenType() == typeOfToken)
 	{
-		outString << tokenVector.at(currentTokenIndex).getValue();
+		string tempString = tokenVector.at(currentTokenIndex).getValue();
 		currentTokenIndex++;
-		return;
+		return tempString;
 	}
 	else
 	{
@@ -75,166 +59,182 @@ void Parser::Match(TokenType typeOfToken)
 	}
 }
 
-void Parser::DatalogProgram(void)
+void Parser::ParseDatalog(void)
 {
 	/*datalogProgram	->	SCHEMES COLON scheme schemeList
 		        FACTS COLON factList
 		        RULES COLON ruleList
 		        QUERIES COLON query queryList*/
 	Match(SCHEMES);
-	outString << "(" << schemesCount << ")";
 	Match(COLON);
-	outString << endl;
-	Scheme();
-	SchemeList();
+	ParseScheme();
+	ParseSchemeList();
 	Match(FACTS);
-	outString << "(" << factsCount << ")";
 	Match(COLON);
-	outString << endl;
-	FactList();
+	ParseFactList();
 	Match(RULES);
-	outString << "(" << rulesCount << ")";
 	Match(COLON);
-	outString << endl;
-	RuleList();
+	ParseRuleList();
 	Match(QUERIES);
-	outString << "(" << queriesCount << ")";
 	Match(COLON);
-	outString << endl;
-	Query();
-	QueryList();
+	ParseQuery();
+	ParseQueryList();
 }
 
-void Parser::SchemeList(void)
+void Parser::ParseSchemeList(void)
 {
 	/*schemeList	->	scheme schemeList | lambda*/
 	Match(COMMENT);
 	Token currentToken = tokenVector.at(currentTokenIndex);
 	if (currentToken.getTokenType() == ID)
 	{
-		Scheme();
-		SchemeList();
+		ParseScheme();
+		ParseSchemeList();
 	}
 }
 
-void Parser::FactList(void)
+void Parser::ParseFactList(void)
 {
 	/*factList	->	fact factList | lambda*/
 	Match(COMMENT);
 	Token currentToken = tokenVector.at(currentTokenIndex);
 	if (currentToken.getTokenType() == ID)
 	{
-		Fact();
-		FactList();
+		ParseFact();
+		ParseFactList();
 	}
 }
 
-void Parser::RuleList(void)
+void Parser::ParseRuleList(void)
 {
 	/*ruleList	->	rule ruleList | lambda*/
 	Match(COMMENT);
 	Token currentToken = tokenVector.at(currentTokenIndex);
 	if (currentToken.getTokenType() == ID)
 	{
-		Rule();
-		RuleList();
+		ParseRule();
+		ParseRuleList();
 	}
 }
 
-void Parser::QueryList(void)
+void Parser::ParseQueryList(void)
 {
 	/*queryList	->	query queryList | lambda*/
 	Match(COMMENT);
 	Token currentToken = tokenVector.at(currentTokenIndex);
 	if (currentToken.getTokenType() == ID)
 	{
-		Query();
-		QueryList();
+		ParseQuery();
+		ParseQueryList();
 	}
 }
 
-void Parser::Scheme(void)
+void Parser::ParseScheme(void)
 {
 	/*scheme   	-> 	ID LEFT_PAREN ID idList RIGHT_PAREN*/
-	outString << INDENT_SPACE;
-	Match(ID);
+	Predicate tempScheme;
+
+	tempScheme.startId = Match(ID);
 	Match(LEFT_PAREN);
-	Match(ID);
-	IdList();
+
+	tempParameterVector.clear();
+	tempParameterVector.push_back(Parameter(Match(ID)));
+	ParseIdList();
+	tempScheme.parameterVector = tempParameterVector;
+
 	Match(RIGHT_PAREN);
 
-	schemesCount++;
-	outString << endl;
+	datalogProgram.schemesVector.push_back(tempScheme);
 }
 
-void Parser::Fact(void)
+void Parser::ParseFact(void)
 {
 	/*fact    	->	ID LEFT_PAREN STRING stringList RIGHT_PAREN PERIOD*/
-	outString << INDENT_SPACE;
-	Match(ID);
+	Predicate tempFact;
+
+	tempFact.startId = Match(ID);
 	Match(LEFT_PAREN);
-	Match(COMMENT);
-	if (tokenVector.at(currentTokenIndex).getTokenType() == STRING)
-	{
-		domainSet.insert(tokenVector.at(currentTokenIndex).getValue());
-	}
-	Match(STRING);
-	StringList(true);
+
+	tempParameterVector.clear();
+	tempParameterVector.push_back(Parameter(Match(STRING)));
+	ParseStringList();
+	tempFact.parameterVector = tempParameterVector;
+
 	Match(RIGHT_PAREN);
 	Match(PERIOD);
-
-	factsCount++;
-	outString << endl;
+	
+	datalogProgram.factsVector.push_back(tempFact);
 }
 
-void Parser::Rule(void)
+void Parser::ParseRule(void)
 {
 	/*rule    	->	headPredicate COLON_DASH predicate predicateList PERIOD*/
-	outString << INDENT_SPACE;
-	HeadPredicate();
-	outString << " ";
+	Rule tempRule;
+
+	tempRule.headPredicate = ParseHeadPredicate();
 	Match(COLON_DASH);
-	outString << " ";
-	Predicate();
-	PredicateList();
+
+	tempPredicateVector.clear();
+	ParsePredicate();
+	ParsePredicateList();
+
+	tempRule.bodyPredicatesVector = tempPredicateVector;
+
 	Match(PERIOD);
 
-	rulesCount++;
-	outString << endl;
+	datalogProgram.rulesVector.push_back(tempRule);
 }
 
-void Parser::Query(void)
+void Parser::ParseQuery(void)
 {
 	/*query		->	predicate Q_MARK*/
-	outString << INDENT_SPACE;
-	Predicate();
+	Predicate tempQuery;
+
+	tempPredicateVector.clear();
+	ParsePredicate();
+	tempQuery = tempPredicateVector.at(0);
 	Match(Q_MARK);
 
-	queriesCount++;
-	outString << endl;
+	datalogProgram.queriesVector.push_back(tempQuery);
 }
 
-void Parser::HeadPredicate(void)
+Predicate Parser::ParseHeadPredicate(void)
 {
 	/*headPredicate	->	ID LEFT_PAREN ID idList RIGHT_PAREN*/
-	Match(ID);
+	Predicate tempPredicate;
+
+	tempPredicate.startId = Match(ID);
 	Match(LEFT_PAREN);
-	Match(ID);
-	IdList();
+
+	tempParameterVector.clear();
+	tempParameterVector.push_back(Parameter(Match(ID)));
+	ParseIdList();
+	tempPredicate.parameterVector = tempParameterVector;
+	
 	Match(RIGHT_PAREN);
+
+	return tempPredicate;
 }
 
-void Parser::Predicate(void)
+void Parser::ParsePredicate(void)
 {
 	/*predicate	->	ID LEFT_PAREN parameter parameterList RIGHT_PAREN*/
-	Match(ID);
+	Predicate tempPredicate;
+
+	tempPredicate.startId = Match(ID);
 	Match(LEFT_PAREN);
-	Parameter();
-	ParameterList();
+
+	tempParameterVector.clear();
+	tempParameterVector.push_back(Parameter(ParseParameter()));
+	ParseParameterList();
+	tempPredicate.parameterVector = tempParameterVector;
+
 	Match(RIGHT_PAREN);
+
+	tempPredicateVector.push_back(tempPredicate);
 }
 
-void Parser::PredicateList(void)
+void Parser::ParsePredicateList(void)
 {
 	/*predicateList	->	COMMA predicate predicateList | lambda*/
 	Match(COMMENT);
@@ -242,12 +242,12 @@ void Parser::PredicateList(void)
 	if (currentToken.getTokenType() == COMMA)
 	{
 		Match(COMMA);
-		Predicate();
-		PredicateList();
+		ParsePredicate();
+		ParsePredicateList();
 	}
 }
 
-void Parser::ParameterList(void)
+void Parser::ParseParameterList(void)
 {
 	/*parameterList	-> 	COMMA parameter parameterList | lambda*/
 	Match(COMMENT);
@@ -255,12 +255,12 @@ void Parser::ParameterList(void)
 	if (currentToken.getTokenType() == COMMA)
 	{
 		Match(COMMA);
-		Parameter();
-		ParameterList();
+		tempParameterVector.push_back(Parameter(ParseParameter()));
+		ParseParameterList();
 	}
 }
 
-void Parser::StringList(bool isFromFacts)
+void Parser::ParseStringList(void)
 {
 	/*stringList	-> 	COMMA STRING stringList | lambda*/
 	Match(COMMENT);
@@ -268,17 +268,12 @@ void Parser::StringList(bool isFromFacts)
 	if (currentToken.getTokenType() == COMMA)
 	{
 		Match(COMMA);
-		if (tokenVector.at(currentTokenIndex).getTokenType() == STRING
-			&& isFromFacts)
-		{
-			domainSet.insert(tokenVector.at(currentTokenIndex).getValue());
-		}
-		Match(STRING);
-		StringList(isFromFacts);
+		tempParameterVector.push_back(Parameter(Match(STRING)));
+		ParseStringList();
 	}
 }
 
-void Parser::IdList(void)
+void Parser::ParseIdList(void)
 {
 	/*idList  	-> 	COMMA ID idList | lambda*/
 	Match(COMMENT);
@@ -286,27 +281,27 @@ void Parser::IdList(void)
 	if (currentToken.getTokenType() == COMMA)
 	{
 		Match(COMMA);
-		Match(ID);
-		IdList();
+		tempParameterVector.push_back(Parameter(Match(ID)));
+		ParseIdList();
 	}
 }
 
-void Parser::Parameter(void)
+string Parser::ParseParameter(void)
 {
 	/*parameter->STRING | ID | expression*/
 	Match(COMMENT);
 	Token currentToken = tokenVector.at(currentTokenIndex);
 	if (currentToken.getTokenType() == STRING)
-	{
-		Match(STRING);
+	{	
+		return Match(STRING);
 	}
 	else if (currentToken.getTokenType() == ID)
 	{
-		Match(ID);
+		return Match(ID);
 	}
 	else if (currentToken.getTokenType() == LEFT_PAREN)
 	{
-		Expression();
+		return ParseExpression();
 	}
 	else
 	{
@@ -314,28 +309,30 @@ void Parser::Parameter(void)
 	}
 }
 
-void Parser::Expression(void)
+string Parser::ParseExpression(void)
 {
 	/*expression	-> 	LEFT_PAREN parameter operator parameter RIGHT_PAREN*/
-	Match(LEFT_PAREN);
-	Parameter();
-	Operator();
-	Parameter();
-	Match(RIGHT_PAREN);
+	string tempExpression = "";
+	tempExpression += Match(LEFT_PAREN);
+	tempExpression += ParseParameter();
+	tempExpression += ParseOperator();
+	tempExpression += ParseParameter();
+	tempExpression += Match(RIGHT_PAREN);
+	return tempExpression;
 }
 
-void Parser::Operator(void)
+string Parser::ParseOperator(void)
 {
 	/*operator	->	ADD | MULTIPLY*/
 	Match(COMMENT);
 	Token currentToken = tokenVector.at(currentTokenIndex);
 	if (currentToken.getTokenType() == ADD)
 	{
-		Match(ADD);
+		return Match(ADD);
 	}
 	else if (currentToken.getTokenType() == MULTIPLY)
 	{
-		Match(MULTIPLY);
+		return Match(MULTIPLY);
 	}
 	else
 	{
@@ -355,5 +352,5 @@ string Parser::VecToString(void)
 
 string Parser::ToString(void)
 {
-	return outString.str();
+	return VecToString();
 }
